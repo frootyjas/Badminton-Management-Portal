@@ -1,0 +1,362 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.wrapper {
+    width: 94%;
+    margin: 80px 0 0 40px;
+}
+
+.org-container {
+    width: 100%;
+}
+
+h1 {
+    text-align: left; 
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 20px; /* Add gap between box1 and box2 */
+}
+
+.box1 {
+    padding: 10px;
+    width: 30%;
+    height: calc(100vh - 200px); 
+    background-color: #fff;
+    border-right: 1px solid #ddd;
+    border-radius: 5px;
+    overflow-y: auto;
+    position: sticky;
+}
+
+.box2 {
+    width: 70%;
+    color: black;
+}
+
+#postSummary {
+    background-color: #fff;
+    border-radius: 5px;
+    border-color: #555;
+}
+
+.dropdown-toggle {
+    width: auto; /* Set width to auto to fit the text */
+    min-width: 120px; /* Set a minimum width to prevent it from shrinking too much */
+}
+
+button {
+    height: auto;
+    width: 100%;
+    max-width: 100px;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 13px;
+    border-radius: 5px;
+    background-color: #142850;
+    transition: all 0.1s linear;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0c7b93;
+    transition: background-color 0.1s;
+}
+
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+
+
+/* Button */
+.btn-primary {
+    display: inline-block;
+    width: calc(50% - 5px);
+    padding: 10px;
+    background-color: #142850;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    display: inline-block;
+    width: calc(50% - 5px);
+    padding: 10px;
+    background-color: #142850;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+    background-color: #0c7b93;
+}
+
+.modal-content :focus {
+    outline: none !important;
+}
+
+.row {
+    margin-bottom: -8px;
+    white-space: nowrap;
+}
+
+.custom-width {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 10px; 
+    padding-right: 10px;
+    min-width: 150px; /* Ensures button is wide enough */
+}
+
+.custom-width i {
+    margin-right: 4px; /* Space between icon and text */
+}
+
+
+.dropdown-toggle {
+    width: auto;
+}
+
+.dropdown-menu .dropdown-item {
+    padding: 10px;
+    color: #212529;
+    white-space: nowrap;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    width: 100%;
+    height: auto;
+    background-color: #ddd !important; 
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+    background-color: #ddd !important;
+}
+
+.dropdown-menu .dropdown-divider {
+    margin: 0.5rem 0;
+    border-top: 1px solid #ddd;
+}
+
+
+#showFormButton {
+    width: auto; /* Set width to auto to fit the text */
+
+    margin-bottom: -8px;
+    background-color: #142850;
+    border: #142850;
+}
+
+#showFormButton:hover {
+    background-color: #0c7b93;
+    transition: .1s;
+    border: #0c7b93;
+}
+
+.post {
+    background-color: #fff;
+    margin-bottom: 20px; /* Add margin bottom to each post */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: black; /* Set font color to black */
+}
+
+.post .profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.post .profile-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.post .profile-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.post h2 {
+    margin-top: 0;
+}
+
+.post img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 10px;
+}
+
+.post-actions {
+    margin-top: 10px;
+}
+
+.post-actions .like-button,
+.post-actions .join-button {
+    padding: 5px 10px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+
+.timestamp {
+    color: #aaa;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+.modal-dialog {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-field {
+    width: calc(33.33% - 20px);
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.input-field label { 
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #2e2e2e;
+}
+
+.input-field input,
+.input-field select {
+    width: 100%;
+    outline: none;
+    font-size: 14px;
+    font-weight: 400;
+    background-color: #f1f4fb;
+    color: #000;
+    border-radius: 5px;
+    border: 1px solid #f1f4fb;
+    padding: 0 15px;
+    height: 42px;
+    box-sizing: border-box;
+}
+
+.input-field input:focus,
+.input-field select:focus {
+    border: 1px solid black;
+}
+
+/* Modal Styles */
+#deleteModal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+#deleteModal .modal-content{
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 30%;
+    text-align: center;
+    border-radius: 10px;
+}
+
+#deleteModal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+#deleteModal .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 30%;
+    text-align: center;
+    border-radius: 10px;
+}
+
+#deleteModal p {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+#deleteModal .modal-content p i {
+    margin-right: 10px;
+    color: red;
+}
+
+#deleteModal .warning-text {
+    font-size: 12px;
+    margin-bottom: 20px; 
+}
+
+#deleteModal .btn-container {
+    display: flex;
+    justify-content: center;
+}
+
+#deleteModal .btn {
+    width: 100px;
+    padding: 0 20px;
+    margin: 0 10px;
+    cursor: pointer;
+    background-color: #142850;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.1s;
+}
+
+#deleteModal .btn:hover{
+    background-color: #0c7b93;
+}
+
+#postModal {
+    width: 400px;
+}

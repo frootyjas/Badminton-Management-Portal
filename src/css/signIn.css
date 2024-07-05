@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    font-family: 'Poppins', sans-serif;
+}
+
+.login-form-container {
+    position: absolute;
+    left: 100px;
+    top: 54%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    width: 90%;
+    max-width: 370px;
+    padding: 15px 20px;
+}
+
+.login-form {
+    width: 100%; 
+    max-width: 400px; 
+    background-color: #fff;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-form-container h4 {
+    color: #fff;
+    font-size: 12px;
+    margin-top: 25px;
+}
+
+.login-form-container h4 a {
+    text-align: center;
+    color: #397CF7;
+    text-decoration: none;
+}
+
+.login-form-container h4 a:hover {
+    text-decoration: underline;
+    color: #397CF7;
+}
+
+.login-form .data label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #2e2e2e;
+}
+
+.login-form .data input,
+.login-form .data select {
+    height: 45px;
+    width: 100%;
+    padding-left: 10px;
+    outline: none;
+    font-size: 14px;
+    font-weight: 400;
+    background-color: #f1f4fb;
+    color: #000;
+    border-radius: 5px;
+    border: 1px solid #f1f4fb;
+    margin: 8px 0;
+    box-sizing: border-box; 
+}
+
+.login-form .data input:focus,
+.login-form .data select:focus {
+    border: 0.8px solid black; 
+}
+
+.login-form .text {
+    font-size: 35px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.login-form form .data {
+    width: 100%;
+    position: relative; 
+}
+
+form .forgot-pass {
+   text-align: center;
+}
+
+form .forgot-pass a {
+    font-size: 11px;
+    color: #397CF7;
+    text-decoration: none;
+}
+
+form .forgot-pass a:hover {
+    text-decoration: underline;
+}
+
+.login-form button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 45px;
+    max-width: 150px;
+    width: 100%;
+    border: none;
+    outline: none;
+    color: #f1f1f1;
+    border-radius: 5px;
+    margin: 25px auto;
+    background-color: #142850;
+    transition: all 0.1s linear;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.login-form .submit {
+    font-size: 17px;
+    font-weight: 400;
+}
+
+.login-form button:hover {
+    background-color: #0c7b93 !important;
+}
+
+.login-form button i {
+    margin: 0 6px;
+}
+
+.login-form button a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.login-form button a:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 40%;
+    right: 18px; 
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+/*for forgot password modal*/
+.login-form input[type="text"], 
+.login-form input[type="password"], 
+.login-form input[type="email"],
+.login-form select {
+    height: 45px;
+    width: 100%;
+    padding-left: 10px;
+    outline: none;
+    font-size: 14px;
+    font-weight: 400;
+    background-color: #f1f4fb;
+    color: #000;
+    border-radius: 5px;
+    border: 1px solid #f1f4fb;
+    margin: 8px 0;
+    box-sizing: border-box;
+}
+
+.login-form input[type="text"]:focus, 
+.login-form input[type="password"]:focus, 
+.login-form input[type="email"]:focus,
+.login-form select:focus {
+    border: 0.8px solid black;
+}
+
+.login-form .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 45px;
+    max-width: 150px;
+    width: 100%;
+    border: none;
+    outline: none;
+    color: #f1f1f1;
+    border-radius: 5px;
+    margin: 25px auto;
+    background-color: #142850;
+    transition: all 0.1s linear;
+    cursor: pointer;
+    text-transform: uppercase;
+}
