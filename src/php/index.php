@@ -15,7 +15,7 @@
     <div class="container">
         <div class="lower-content-container">
             <div class="text-content">
-                <h1>Be ddd</h1>
+                <h1>Be new</h1>
                 <h2>Upskill with Us</h2>
             </div>
             <div class="button-container">
