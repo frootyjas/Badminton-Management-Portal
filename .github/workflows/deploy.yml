@@ -3,7 +3,7 @@ name: Deploy to 000webhost
 on:
   push:
     branches:
-      - main
+      - main  
 
 jobs:
   ftp-deploy:
@@ -19,8 +19,8 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: .
-          server-dir: /public_html/
+          local-dir: ./
+          server-dir: /public_html/  
           exclude: |
             .git*
             .github/*
