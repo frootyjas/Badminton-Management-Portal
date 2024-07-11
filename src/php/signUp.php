@@ -207,19 +207,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="image-grid">
                 <div class="image-item">
                     <a href="#" onclick="showSignUpForm('courtOwner')">
-                        <img src="../content-images/2.png" alt="Image 2">
+                        <img src="../../assets/content-images/2.png" alt="Image 2">
                         <p>Court Owner</p>
                     </a>
                 </div>
                 <div class="image-item">
                     <a href="#" onclick="showSignUpForm('coach')">
-                        <img src="../content-images/3.png" alt="Image 3">
+                        <img src="../../assets/content-images/3.png" alt="Image 3">
                         <p>Coach</p>
                     </a>
                 </div>
                 <div class="image-item">
                     <a href="#" onclick="showSignUpForm('player')">
-                        <img src="../content-images/4.png" alt="Image 4">
+                        <img src="../../assets/content-images/4.png" alt="Image 4">
                         <p>Player</p>
                     </a>
                 </div>                

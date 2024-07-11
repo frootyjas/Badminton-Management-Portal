@@ -9,7 +9,7 @@
 </head>
 <body>
     <div id="index-ui"> 
-            <?php include 'index-ui.php'; ?>
+            <?php include 'src/php/index-ui.php'; ?>
     </div>
     
     <div class="container">
@@ -19,10 +19,10 @@
                 <h2>Upskill with Us</h2>
             </div>
             <div class="button-container">
-                <a href="signUp.php">
+                <a href="src/php/signUp.php">
                     <button>Sign up</button>
                 </a>
-                <a href="signIn.php">
+                <a href="./src/php/signIn.php">
                     <button>Sign in</button>
                 </a>
             </div>
