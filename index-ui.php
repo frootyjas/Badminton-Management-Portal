@@ -9,8 +9,8 @@
     <div class="container">
         <div class="upper-content-container">
             <div class="logo-container">
-                <a href="../../index.php">
-                    <img src="../../assets/content-images/logo-white.png" alt="Logo">
+                <a href="index.php">
+                    <img src="../content-images/logo-white.png" alt="Logo">
                 </a>
             </div>
             <div class="title-container">
@@ -20,7 +20,7 @@
     </div>
 
     <div class="img-container">
-        <img src="../../assets/content-images/indexImg.png" alt="Image">
+        <img src="../content-images/indexImg.png" alt="Image">
     </div>
 </body>
 </html>
