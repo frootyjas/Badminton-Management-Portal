@@ -22,7 +22,7 @@
                 <a href="src/php/signUp.php">
                     <button>Sign up</button>
                 </a>
-                <a href="src/php/signIn.php">
+                <a href="signIn.php">
                     <button>Sign in</button>
                 </a>
             </div>
