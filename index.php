@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
-    <link rel="stylesheet" href="../../css/style.css">
-    <style>@import url("../../css/index-ui.css");</style>
+    <link rel="stylesheet" href="../src/css/style.css">
+    <style>@import url("../src/css/index-ui.css");</style>
 </head>
 <body>
     <div id="index-ui"> 
@@ -19,10 +19,10 @@
                 <h2>Upskill with Us</h2>
             </div>
             <div class="button-container">
-                <a href="signUp.php">
+                <a href="../src/php/signUp.php">
                     <button>Sign up</button>
                 </a>
-                <a href="signIn.php">
+                <a href="../src/php/signIn.php">
                     <button>Sign in</button>
                 </a>
             </div>
