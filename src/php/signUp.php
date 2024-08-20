@@ -1,163 +1,211 @@
 <?php
 session_start();
 include '../../config/config.php'; // Include the database configuration file
+require '../../vendor/autoload.php'; // Include PHPMailer autoload
 
-// Check if the registration form is submitted
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+function sendOTP($email, $otp) {
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'btnbdmntn.prtl@gmail.com';
+        $mail->Password = 'faec beux ecet qtrg';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        $mail->setFrom('btnbdmntn.prtl@gmail.com', 'Bataan Badminton Portal');
+        $mail->addAddress($email);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'One-Time Password';
+        $mail->Body = '
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+                .header { text-align: center; padding-bottom: 20px; }
+                .content { text-align: center; }
+                .otp-code { font-size: 24px; font-weight: bold; color: #007bff; }
+                .footer { margin-top: 20px; text-align: center; color: #777; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Your OTP Code</h1>
+                </div>
+                <div class="content">
+                    <p>Hi there,</p>
+                    <p>Your OTP code is:</p>
+                    <p class="otp-code">' . htmlspecialchars($otp) . '</p>
+                    <p>Please use this code to complete your authentication.</p>
+                </div>
+                <div class="footer">
+                    <p>If you did not request this code, please ignore this email.</p>
+                </div>
+            </div>
+        </body>
+        </html>';
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+$error = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Perform form validation here
-
-    // Determine which form was submitted and handle accordingly
     if (isset($_POST['userType'])) {
         $userType = $_POST['userType'];
+        $username = $_POST['username_' . $userType] ?? '';
+        $password = password_hash($_POST['password1_' . $userType] ?? '', PASSWORD_DEFAULT);
 
-        // Common data
-        $username = $_POST['username_' . $userType];
-        $password = password_hash($_POST['password1_' . $userType], PASSWORD_DEFAULT);
+        if (empty($username) || empty($password)) {
+            $error = "Please fill out all the fields correctly.";
+        } else {
+            try {
+                $conn->begin_transaction();
+                $email = '';
 
-        try {
-            $conn->begin_transaction();
+                switch ($userType) {
+                    case 'courtOwner':
+                        $firstNameOwner = $_POST['first_name_owner'] ?? '';
+                        $middleNameOwner = $_POST['middle_name_owner'] ?? '';
+                        $lastNameOwner = $_POST['last_name_owner'] ?? '';
+                        $genderOwner = $_POST['gender_owner'] ?? '';
+                        $dobOwner = $_POST['date_of_birth_owner'] ?? '';
+                        $statusOwner = $_POST['status_owner'] ?? '';
+                        $contactNumberOwner = $_POST['contact_number_owner'] ?? '';
+                        $email = $_POST['email_owner'] ?? '';
+                        $municipalityOwner = $_POST['municipality_owner'] ?? '';
+                        $username = $_POST['username'] ?? '';
+                        $password = $_POST['password'] ?? '';
+                    
+                        if (empty($firstNameOwner) || empty($lastNameOwner) || empty($genderOwner) || empty($dobOwner) || empty($statusOwner) || empty($contactNumberOwner) || empty($email) || empty($municipalityOwner) || empty($username) || empty($password)) {
+                            $error = "Please fill out all the fields correctly.";
+                            throw new Exception($error);
+                        }
+                    
+                        $stmt = $conn->prepare("SELECT * FROM court_owner WHERE email = ?");
+                        if ($stmt === false) {
+                            throw new Exception("Failed to prepare SQL statement: " . $conn->error);
+                        }
+                    
+                        $stmt->bind_param("s", $email);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        if ($result->num_rows > 0) {
+                            $error = "Email has already been used.";
+                            throw new Exception($error);
+                        }
+                    
+                        $stmt = $conn->prepare("INSERT INTO court_owner (first_name, middle_name, last_name, gender, date_of_birth, status, contact_number, email, municipality, username, password, email_verified) 
+                                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'no')");
+                        if ($stmt === false) {
+                            throw new Exception("Failed to prepare SQL statement: " . $conn->error);
+                        }
+                    
+                        $stmt->bind_param("sssssssssss", $firstNameOwner, $middleNameOwner, $lastNameOwner, $genderOwner, $dobOwner, $statusOwner, $contactNumberOwner, $email, $municipalityOwner, $username, $password);
+                        $stmt->execute();
+                    
+                        if ($stmt->error) {
+                            throw new Exception($stmt->error);
+                        }
+                    
+                        break;                    
 
-            switch ($userType) {
-                case 'courtOwner':
-                    // Court data
-                    $businessName = $_POST['business_name'];
-                    $ownershipType = $_POST['ownership'];
-                    $dateEstablished = $_POST['date_established'];
-                    $fromHours = $_POST['from_hours'];
-                    $toHours = $_POST['to_hours'];
-                    $contactNumberBusiness = $_POST['contact_number_business'];
-                    $businessEmail = $_POST['business_email'];
-                    $streetBusiness = $_POST['street'];
-                    $barangayBusiness = $_POST['barangay'];
-                    $municipalityBusiness = $_POST['municipality'];
+                    case 'user':
+                        $firstNameUser = $_POST['first_name_user'] ?? '';
+                        $middleNameUser = $_POST['middle_name_user'] ?? '';
+                        $lastNameUser = $_POST['last_name_user'] ?? '';
+                        $userType = $_POST['user_type'] ?? '';
+                        $genderUser = $_POST['gender_user'] ?? '';
+                        $dobUser = $_POST['date_of_birth_user'] ?? '';
+                        $contactNumberUser = $_POST['contact_number_user'] ?? '';
+                        $email = $_POST['email_user'] ?? '';
+                        $municipalityUser = $_POST['municipality_user'] ?? '';
 
-                    // Insert Court data
-                    $stmt = $conn->prepare("INSERT INTO court (business_name, ownership, date_established, from_hours, to_hours, contact_number, business_email, street, barangay, municipality) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->bind_param("ssssssssss", $businessName, $ownershipType, $dateEstablished, $fromHours, $toHours, $contactNumberBusiness, $businessEmail, $streetBusiness, $barangayBusiness, $municipalityBusiness);
+                        if (empty($firstNameUser) || empty($lastNameUser) || empty($genderUser) || empty($dobUser) || empty($contactNumberUser) || empty($email) || empty($municipalityUser)) {
+                            $error = "Please fill out all the fields correctly.";
+                            throw new Exception($error);
+                        }
+
+                        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+                        if ($stmt === false) {
+                            throw new Exception("Failed to prepare SQL statement: " . $conn->error);
+                        }
+
+                        $stmt->bind_param("s", $email);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        if ($result->num_rows > 0) {
+                            $error = "Email has already been used.";
+                            throw new Exception($error);
+                        }
+
+                        $stmt = $conn->prepare("INSERT INTO users (first_name, middle_name, last_name, user_type, gender, date_of_birth, contact_number, email, municipality, username, password, email_verified) 
+                                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'no')");
+                        if ($stmt === false) {
+                            throw new Exception("Failed to prepare SQL statement: " . $conn->error);
+                        }
+
+                        $stmt->bind_param("sssssssssss", $firstNameUser, $middleNameUser, $lastNameUser, $userType, $genderUser, $dobUser, $contactNumberUser, $email, $municipalityUser, $username, $password);
+                        $stmt->execute();
+
+                        if ($stmt->error) {
+                            throw new Exception($stmt->error);
+                        }
+
+                        break;
+                }
+
+                if (empty($error)) {
+                    $otp = rand(100000, 999999);
+                    $userId = $conn->insert_id; // Retrieve the last inserted ID
+                
+                    // Store user_id in session
+                    $_SESSION['user_id'] = $userId;
+                
+                    $stmt = $conn->prepare("INSERT INTO otp (user_id, otp) VALUES (?, ?)");
+                    if ($stmt === false) {
+                        throw new Exception("Failed to prepare SQL statement: " . $conn->error);
+                    }
+                
+                    $stmt->bind_param("is", $userId, $otp);
                     $stmt->execute();
-
-                    // Check for errors
+                
                     if ($stmt->error) {
                         throw new Exception($stmt->error);
                     }
-
-                    // Get the last inserted court_id
-                    $courtId = $stmt->insert_id;
-
-                    // Court owner data
-                    $firstNameOwner = $_POST['first_name_owner'];
-                    $middleNameOwner = $_POST['middle_name_owner'];
-                    $lastNameOwner = $_POST['last_name_owner'];
-                    $extensionNameOwner = $_POST['extension_name_owner'];
-                    $genderOwner = $_POST['gender_owner'];
-                    $dobOwner = $_POST['date_of_birth_owner'];
-                    $statusOwner = $_POST['status_owner'];
-                    $contactNumberOwner = $_POST['contact_number_owner'];
-                    $emailOwner = $_POST['email_owner'];
-                    $municipalityOwner = $_POST['municipality_owner'];
-
-                    // Insert Court owner data
-                    $stmt = $conn->prepare("INSERT INTO court_owner (court_id, first_name, middle_name, last_name, extension_name, gender, date_of_birth, status, contact_number, email, municipality, username, password) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->bind_param("issssssssssss", $courtId, $firstNameOwner, $middleNameOwner, $lastNameOwner, $extensionNameOwner, $genderOwner, $dobOwner, $statusOwner, $contactNumberOwner, $emailOwner, $municipalityOwner, $username, $password);
-                    $stmt->execute();
-
-                    // Check for errors
-                    if ($stmt->error) {
-                        throw new Exception($stmt->error);
+                
+                    if (sendOTP($email, $otp)) {
+                        $_SESSION['email'] = $email;
+                        $conn->commit();
+                        header("Location: verifyOtp.php");
+                        exit();
+                    } else {
+                        $error = "Failed to send OTP. Please try again.";
                     }
+                }                
 
-                    break;
-
-                case 'coach':
-                    // Coach data
-                    $firstNameCoach = $_POST['first_name_coach'];
-                    $middleNameCoach = $_POST['middle_name_coach'];
-                    $lastNameCoach = $_POST['last_name_coach'];
-                    $extensionNameCoach = isset($_POST['extension_name_coach']) ? $_POST['extension_name_coach'] : null; // Handle optional field
-                    $genderCoach = $_POST['gender_coach'];
-                    $dobCoach = $_POST['date_of_birth_coach'];
-                    $contactNumberCoach = $_POST['contact_number_coach'];
-                    $emailCoach = $_POST['email_coach'];
-                    $municipalityCoach = $_POST['municipality_coach'];
-
-                    if (!$municipalityCoach) {
-                        throw new Exception('Municipality cannot be null');
-                    }
-
-                    // Insert Coach data
-                    $stmt = $conn->prepare("INSERT INTO coach (first_name, middle_name, last_name, extension_name, gender, date_of_birth, contact_number, email, municipality, username, password) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->bind_param("sssssssssss", $firstNameCoach, $middleNameCoach, $lastNameCoach, $extensionNameCoach, $genderCoach, $dobCoach, $contactNumberCoach, $emailCoach, $municipalityCoach, $username, $password);
-                    $stmt->execute();
-
-                    // Check for errors
-                    if ($stmt->error) {
-                        throw new Exception($stmt->error);
-                    }
-
-                    break;    
-
-                case 'player':
-                    // Player data
-                    $firstName = $_POST['first_name_player'];
-                    $middleName = $_POST['middle_name_player'];
-                    $lastName = $_POST['last_name_player'];
-                    $extensionName = $_POST['extension_name_player'];
-                    $gender = $_POST['gender_player'];
-                    $dob = $_POST['date_of_birth_player'];
-                    $contactNumber = $_POST['contact_number_player'];
-                    $email = $_POST['email_player'];
-                    $municipality = $_POST['municipality_player'];
-
-                    // Insert Player data
-                    $stmt = $conn->prepare("INSERT INTO player (first_name, middle_name, last_name, extension_name, gender, date_of_birth, contact_number, email, municipality, username, password) 
-                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->bind_param("sssssssssss", $firstName, $middleName, $lastName, $extensionName, $gender, $dob, $contactNumber, $email, $municipality, $username, $password);
-                    $stmt->execute();
-
-                    // Check for errors
-                    if ($stmt->error) {
-                        throw new Exception($stmt->error);
-                    }
-
-                    break;
-
-                // Handle other user types (if any)
-
-                default:
-                    // Handle invalid user types
-                    header("Location: error.php");
-                    exit();
+                $conn->rollback();
+            } catch (Exception $e) {
+                $conn->rollback();
+                $error = $e->getMessage();
             }
-
-            $conn->commit();
-
-            // Assuming form validation is successful, update session flag
-            $_SESSION['registered'] = true;
-            $_SESSION['username'] = $username;
-            $_SESSION['loggedin'] = true;
-            $_SESSION['userType'] = $userType;
-
-            // Redirect accordingly
-            switch ($userType) {
-                case 'courtOwner':
-                    header("Location: signIn.php");
-                    break;
-                case 'player':
-                case 'coach':
-                    header("Location: signIn.php");
-                    break;
-            }
-            exit();
-        } catch (Exception $e) {
-            $conn->rollback();
-            echo "Error: " . $e->getMessage();
         }
     }
 }
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -168,7 +216,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="../css/signUp.css">
     <style>@import url("../css/index-ui.css");</style>
     <style>
-       .password-container {
+        .signup-form {
+            display: none; /* Ensure forms are hidden initially */
+        }
+
+        .password-container {
             margin: 0;
         }
 
@@ -191,8 +243,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: red;
         }
 
-        #password-checklist-<?php echo $userType; ?> {
-            display: none;
+        .alert-danger {
+            background-color: red;
+            color: white;
         }
     </style>
 </head>
@@ -212,15 +265,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </a>
                 </div>
                 <div class="image-item">
-                    <a href="#" onclick="showSignUpForm('coach')">
-                        <img src="../../assets/content-images/3.png" alt="Image 3">
-                        <p>Coach</p>
-                    </a>
-                </div>
-                <div class="image-item">
-                    <a href="#" onclick="showSignUpForm('player')">
+                    <a href="#" onclick="showSignUpForm('user')">
                         <img src="../../assets/content-images/4.png" alt="Image 4">
-                        <p>Player</p>
+                        <p>User</p>
                     </a>
                 </div>                
             </div>
@@ -233,76 +280,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="signup-form" id="courtOwnerFormContainer">
         <label for="show" class="close-btn fas fa-times" title="close" onclick="hideSignupForm()"></label>
         <div class="text">Sign up as Court Owner</div>
+        <?php if (!empty($error)): ?>
+            <div class="alert alert-danger" role="alert">
+                <?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
         <form id="ownerSignUpForm" action="signUp.php" onsubmit="return validateAndRedirect('ownerSignUpForm')" method="POST">
-        <input type="hidden" name="userType" value="courtOwner">            
+            <input type="hidden" name="userType" value="courtOwner">            
             <div class="form first">
-                <div class="details business" id="business-details"
-                    <span class="title">Business Details</span>
-                    <div class="fields">
-                        <div class="input-field">
-                            <label for="business-name">Business Name</label>
-                            <input type="text" id="business-name" name="business_name" placeholder="Enter your business name" required>
-                        </div>
-                        <div class="input-field">
-                            <label for="ownership">Type of Ownership</label>
-                            <select id="ownership" name="ownership" required>
-                                <option disabled selected>Select type of ownership</option>
-                                <option value="Single Ownership">Single Ownership</option>
-                                <option value="Partnership">Partnership</option>
-                                <option value="Corporation">Corporation</option>
-                                <option value="Franchised">Franchised</option>
-                            </select>
-                        </div>
-                        <div class="input-field">
-                            <label for="date-established">Date of Establishment</label>
-                            <input type="date" id="date-established" name="date_established" placeholder="Enter date of establishment" required>
-                        </div>
-                        <div class="input-field">
-                            <label for="from-hours">Business Operating Hours (From)</label>
-                            <input type="time" id="from-hours" name="from_hours" required>
-                        </div>
-                        <div class="input-field">
-                            <label for="to-hours">Business Operating Hours (To)</label>
-                            <input type="time" id="to-hours" name="to_hours" required>
-                        </div>
-                        <div class="input-field">
-                            <label for="contact-number-business">Business Mobile Number</label>
-                            <input type="tel" id="contact-number-business" name="contact_number_business" placeholder="Enter your business mobile number" required oninput="validateContactNumber(this)">
-                            <div id="contact-number-business-error" class="error-message"></div>
-                        </div>
-                        <div class="input-field">
-                            <label for="business-email">Business Email</label>
-                            <input type="email" id="business-email" name="business_email" placeholder="Enter your business email" required>
-                        </div>
-                        <div class="input-field">
-                            <label for="street">Street</label>
-                            <input type="text" id="street" name="street" placeholder="Enter street name" required>
-                        </div>
-                        <div class="input-field">
-                            <label for="barangay">Barangay</label>
-                            <input type="text" id="barangay" name="barangay" placeholder="Enter barangay name" required>
-                        </div>
-                        <div class="input-field">
-                            <label for="municipality">Municipality</label>
-                            <select id="municipality" name="municipality" required>
-                                <option disabled selected>Select municipality</option>
-                                <option value="Abucay">Abucay</option>
-                                <option value="Bagac">Bagac</option>
-                                <option value="Balanga City">Balanga City</option>
-                                <option value="Dinalupihan">Dinalupihan</option>
-                                <option value="Hermosa">Hermosa</option>
-                                <option value="Limay">Limay</option>
-                                <option value="Mariveles">Mariveles</option>
-                                <option value="Morong">Morong</option>
-                                <option value="Orani">Orani</option>
-                                <option value="Orion">Orion</option>
-                                <option value="Samal">Samal</option>
-                                <option value="Pilar">Pilar</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="details owner" id="owner-details">
                     <span class="title">Owner Details</span>
                     <div class="fields">
@@ -320,19 +305,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <label for="last-name-owner">Last Name</label>
                             <input type="text" id="last-name-owner" name="last_name_owner" placeholder="Enter your last name" required oninput="validateName(this)">
                             <div id="last-name-owner-error" class="error-message"></div>
-                        </div>
-                        <div class="input-field">
-                            <label for="extension-name">Extension Name</label>
-                            <select id="extension-name" name="extension_name_owner">
-                                <option disabled selected>Select extension name</option>
-                                <option value="None">None</option>
-                                <option value="Sr.">Sr.</option>
-                                <option value="Jr.">Jr.</option>
-                                <option value="I">I</option>
-                                <option value="II">II</option>
-                                <option value="III">III</option>
-                                <option value="IV">IV</option>
-                            </select>
                         </div>
                         <div class="input-field">
                             <label for="gender">Gender</label>
@@ -389,17 +361,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
 
                 <div class="details personal" id="owner-account-details">
-                    <span class="title">Admin Account Details <h4>(This will serve as your credentials when accessing the admin page.)</h4></span>
+                    <span class="title">Account Details <h4>(This will serve as your credentials when accessing the admin page.)</h4></span>
                     <div class="fields">
                         <div class="input-field">
                             <label for="username">Username</label>
                             <input type="text" id="username" name="username_courtOwner" placeholder="Enter your username" required>
                         </div>
                         <div class="input-field">
-                            <label>Password</label>
-                            <input id="password1-owner" name="password1_courtOwner" type="password" placeholder="Enter your password" required onkeyup="checkPassword('owner')">
+                            <label for="password1-owner">Password</label>
+                            <input id="password1-owner" name="password1_owner" type="password" placeholder="Enter your password" required>
                             <div class="password-container">
-                                <ul id="password-checklist-owner">
+                                <ul id="password-checklist-owner" style="display:none;">
                                     <li id="length-owner"><i class="fas fa-times"></i> Minimum 8 characters</li>
                                     <li id="uppercase-owner"><i class="fas fa-times"></i> At least one uppercase letter</li>
                                     <li id="lowercase-owner"><i class="fas fa-times"></i> At least one lowercase letter</li>
@@ -409,12 +381,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </div>
                         </div>
                         <div class="input-field">
-                            <label>Confirm Password</label>
-                            <input id="password2-owner" name="password2_courtOwner" type="password" placeholder="Confirm your password" required>
+                            <label for="password2-owner">Confirm Password</label>
+                            <input id="password2-owner" name="password2_owner" type="password" placeholder="Confirm your password" required>
                             <span id="password-error-owner" style="color: red; font-size: 12px; display: none;">Passwords do not match</span>
                         </div>
-                        <button type="submit" class="submit" name="register" form="ownerSignUpForm" formType="owner">
-                            <span class="btnText">Submit</span> 
+                        <button type="submit" class="submit" name="register" formType="court_owner" onclick="submitForm(event, 'court_owner', 'ownerSignUpForm')">
+                            <span class="btnText">Register</span>
                         </button>
                     </div>
                 </div>
@@ -422,173 +394,50 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
     </div>
 
-    <!-- coach sign up form -->
-    <div class="signup-form" id="coachFormContainer">
+    <div class="signup-form" id="userFormContainer">
         <label for="show" class="close-btn fas fa-times" title="close" onclick="hideSignupForm()"></label>
-        <div class="text">Sign up as Coach</div>
-        <form id="coachSignUpForm" action="#" onsubmit="return validateAndRedirect('coachSignUpForm', 'home.php')" method="POST">        
-        <input type="hidden" name="userType" value="coach">                
-                <div class="details personal" id="coach-personal-details">
-                    <span class="title">Personal Details</span>
-                    <div class="fields">
-                        <div class="input-field">
-                            <label for="first-name-coach">First Name</label>
-                            <input type="text" id="first-name-coach" name="first_name_coach" placeholder="Enter your first name" required oninput="validateName(this)">
-                            <div id="first-name-coach-error" class="error-message"></div>
-                        </div>
-
-                        <div class="input-field">
-                            <label for="middle-name-coach">Middle Name</label>
-                            <input type="text" id="middle-name-coach" name="middle_name_coach" placeholder="Enter your middle name" required oninput="validateName(this)">
-                            <div id="middle-name-coach-error" class="error-message"></div>
-                        </div>
-
-                        <div class="input-field">
-                            <label for="last-name-coach">Last Name</label>
-                            <input type="text" id="last-name-coach" name="last_name_coach" placeholder="Enter your last name" required oninput="validateName(this)">
-                            <div id="last-name-coach-error" class="error-message"></div>
-                        </div>
-
-                        <div class="input-field">
-                            <label for="extension-name">Extension Name</label>
-                            <select id="extension-name" name="extension_name_coach">
-                                <option disabled selected>Select extension name</option>
-                                <option>None</option>
-                                <option>Sr.</option>
-                                <option>Jr.</option>
-                                <option>I</option>
-                                <option>II</option>
-                                <option>III</option>
-                                <option>IV</option>
-                            </select>
-                        </div>
-
-                        <div class="input-field">
-                            <label for="gender">Gender</label>
-                            <select id="gender" name="gender_coach" required>
-                                <option disabled selected>Select gender</option>
-                                <option>Male</option>
-                                <option>Female</option>
-                            </select>
-                        </div>
-
-                        <div class="input-field">
-                            <label for="date-of-birth-coach">Date of Birth</label>
-                            <input type="date" id="date-of-birth-coach" name="date_of_birth_coach" placeholder="Enter birth date" required onchange="validateAge(this)">
-                            <div class="error-message"></div>
-                        </div>                        
-
-                        <div class="input-field">
-                            <label for="contact-number-coach">Contact Number</label>
-                            <input type="tel" id="contact-number-coach" name="contact_number_coach" placeholder="Enter your contact number" required oninput="validateContactNumber(this)">
-                            <div id="contact-number-coach-error" class="error-message"></div>
-                        </div>
-
-                        <div class="input-field">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email_coach" placeholder="Enter your email" required>
-                        </div>
-
-                        <div class="input-field">
-                            <label for="municipality">Municipality</label>
-                            <select id="municipality" name="municipality_coach" required>
-                                <option disabled selected>Select municipality</option>
-                                <option>Abucay</option>
-                                <option>Bagac</option>
-                                <option>Balanga City</option>
-                                <option>Dinalupihan</option>
-                                <option>Hermosa</option>
-                                <option>Limay</option>
-                                <option>Mariveles</option>
-                                <option>Morong</option>
-                                <option>Orani</option>
-                                <option>Orion</option>
-                                <option>Samal</option>
-                                <option>Pilar</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="details account" id="coach-account-details">
-                    <span class="title">Account Details</span>
-                    <div class="fields">
-                        <div class="input-field">
-                            <label for="username">Username</label>
-                            <input type="text" id="username" name="username_coach" placeholder="Enter your username" required>
-                        </div>
-                        <div class="input-field">
-                            <label>Password</label>
-                            <input id="password1-coach" name="password1_coach" type="password" placeholder="Enter your password" required onkeyup="checkPassword('coach')">
-                            <div class="password-container">
-                                <ul id="password-checklist-coach">
-                                    <li id="length-coach"><i class="fas fa-times"></i> Minimum 8 characters</li>
-                                    <li id="uppercase-coach"><i class="fas fa-times"></i> At least one uppercase letter</li>
-                                    <li id="lowercase-coach"><i class="fas fa-times"></i> At least one lowercase letter</li>
-                                    <li id="number-coach"><i class="fas fa-times"></i> At least one number</li>
-                                    <li id="special-coach"><i class="fas fa-times"></i> At least one special character</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="input-field">
-                            <label>Confirm Password</label>
-                            <input id="password2-coach" name="password2_coach" type="password" placeholder="Confirm your password" required>
-                            <span id="password-error-coach" style="color: red; font-size: 12px; display: none;">Passwords do not match</span>
-                        </div>
-                        <button type="submit" class="submit" name="register" form="coachSignUpForm" formType="coach">
-                            <span class="btnText">Submit</span> 
-                        </button>
-                    </div>
-                </div>
+        <div class="text">Sign up as User</div>
+        <?php if (!empty($error)): ?>
+            <div class="alert alert-danger" role="alert">
+                <?php echo htmlspecialchars($error); ?>
             </div>
-        </form>
-    </div>
-
-    <!-- sign up for player -->
-    <div class="signup-form" id="playerFormContainer">
-        <label for="show" class="close-btn fas fa-times" title="close" onclick="hideSignupForm()"></label>
-        <div class="text">Sign up as Player</div>
-        <form id="playerSignUpForm" action="#" onsubmit="return validateAndRedirect('playerSignUpForm', 'signIn.php')" method="POST">        
-        <input type="hidden" name="userType" value="player">           
+        <?php endif; ?>
+        <form id="userSignUpForm" action="signUp.php" onsubmit="return validateAndRedirect('userSignUpForm')" method="POST">
+            <input type="hidden" name="userType" value="user">
             <div class="form first">
-                <div class="details personal" id="player-personal-details">
+                <div class="details personal" id="user-personal-details">
                     <span class="title">Personal Details</span>
                     <div class="fields">
                         <div class="input-field">
-                            <label for="first-name-player">First Name</label>
-                            <input type="text" id="first-name-player" name="first_name_player" placeholder="Enter your first name" required oninput="validateName(this, 'first-name-duplicate')">
-                            <div id="first-name-player-error" class="error-message"></div>
-                        </div>
-                        
-                        <div class="input-field">
-                            <label for="middle-name-player">Middle Name</label>
-                            <input type="text" id="middle-name-player" name="middle_name_player" placeholder="Enter your middle name" required oninput="validateName(this, 'middle-name-duplicate')">
-                            <div id="middle-name-player-error" class="error-message"></div>
-                        </div>
-                        
-                        <div class="input-field">
-                            <label for="last-name-player">Last Name</label>
-                            <input type="text" id="last-name-player" name="last_name_player" placeholder="Enter your last name" required oninput="validateName(this, 'last-name-duplicate')">
-                            <div id="last-name-player-error" class="error-message"></div>
+                            <label for="first-name-user">First Name</label>
+                            <input type="text" id="first-name-user" name="first_name_user" placeholder="Enter your first name" required oninput="validateName(this, 'first-name-duplicate')">
+                            <div id="first-name-user-error" class="error-message"></div>
                         </div>
 
                         <div class="input-field">
-                            <label for="extension-name">Extension Name</label>
-                            <select id="extension-name" name="extension_name_player">
-                                <option disabled selected>Select extension name</option>
-                                <option value="None">None</option>
-                                <option>Sr.</option>
-                                <option>Jr.</option>
-                                <option>I</option>
-                                <option>II</option>
-                                <option>III</option>
-                                <option>IV</option>
+                            <label for="middle-name-user">Middle Name</label>
+                            <input type="text" id="middle-name-user" name="middle_name_user" placeholder="Enter your middle name" required oninput="validateName(this, 'middle-name-duplicate')">
+                            <div id="middle-name-user-error" class="error-message"></div>
+                        </div>
+
+                        <div class="input-field">
+                            <label for="last-name-user">Last Name</label>
+                            <input type="text" id="last-name-user" name="last_name_user" placeholder="Enter your last name" required oninput="validateName(this, 'last-name-duplicate')">
+                            <div id="last-name-user-error" class="error-message"></div>
+                        </div>
+
+                        <div class="input-field">
+                            <label for="user-type">User Type</label>
+                            <select id="user-type" name="user_type" required>
+                                <option disabled selected>Select user type</option>
+                                <option value="COACH">Coach</option>
+                                <option value="PLAYER">Player</option>
                             </select>
                         </div>
 
                         <div class="input-field">
-                            <label for="gender">Gender</label>
-                            <select id="gender" name="gender_player" required>
+                            <label for="gender-user">Gender</label>
+                            <select id="gender-user" name="gender_user" required>
                                 <option disabled selected>Select gender</option>
                                 <option>Male</option>
                                 <option>Female</option>
@@ -596,25 +445,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
 
                         <div class="input-field">
-                            <label for="date-of-birth-player">Date of Birth</label>
-                            <input type="date" id="date-of-birth-player" name="date_of_birth_player" placeholder="Enter birth date" required onchange="validateAge(this)">
-                            <div id="date-of-birth-player-error" class="error-message"></div>
+                            <label for="date-of-birth-user">Date of Birth</label>
+                            <input type="date" id="date-of-birth-user" name="date_of_birth_user" placeholder="Enter birth date" required onchange="validateAge(this)">
+                            <div id="date-of-birth-user-error" class="error-message"></div>
                         </div>
 
                         <div class="input-field">
-                            <label for="contact-number-player">Contact Number</label>
-                            <input type="tel" id="contact-number-player" name="contact_number_player" placeholder="Enter your contact number" required oninput="validateContactNumber(this)">
-                            <div id="contact-number-player-error" class="error-message"></div>
+                            <label for="contact-number-user">Contact Number</label>
+                            <input type="tel" id="contact-number-user" name="contact_number_user" placeholder="Enter your contact number" required oninput="validateContactNumber(this)">
+                            <div id="contact-number-user-error" class="error-message"></div>
                         </div>
 
                         <div class="input-field">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email_player" placeholder="Enter your email" required>
+                            <label for="email-user">Email</label>
+                            <input type="email" id="email-user" name="email_user" placeholder="Enter your email" required>
                         </div>
 
                         <div class="input-field">
-                            <label for="municipality">Municipality</label>
-                            <select id="municipality" name="municipality_player" required>
+                            <label for="municipality-user">Municipality</label>
+                            <select id="municipality-user" name="municipality_user" required>
                                 <option disabled selected>Select municipality</option>
                                 <option>Abucay</option>
                                 <option>Bagac</option>
@@ -633,40 +482,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                 </div>
 
-                <div class="details account" id="player-account-details">
+                <div class="details account" id="user-account-details">
                     <span class="title">Account Details</span>
                     <div class="fields">
                         <div class="input-field">
-                            <label for="username">Username</label>
-                            <input type="text" id="username" name="username_player" placeholder="Enter your username" required>
+                            <label for="username-user">Username</label>
+                            <input type="text" id="username-user" name="username_user" placeholder="Enter your username" required>
                         </div>
                         <div class="input-field">
-                            <label>Password</label>
-                            <input id="password1-player" name="password1_player" type="password" placeholder="Enter your password" required onkeyup="checkPassword('player')">
+                            <label for="password1-user">Password</label>
+                            <input id="password1-user" name="password1_user" type="password" placeholder="Enter your password" required>
                             <div class="password-container">
-                                <ul id="password-checklist-player">
-                                    <li id="length-player"><i class="fas fa-times"></i> Minimum 8 characters</li>
-                                    <li id="uppercase-player"><i class="fas fa-times"></i> At least one uppercase letter</li>
-                                    <li id="lowercase-player"><i class="fas fa-times"></i> At least one lowercase letter</li>
-                                    <li id="number-player"><i class="fas fa-times"></i> At least one number</li>
-                                    <li id="special-player"><i class="fas fa-times"></i> At least one special character</li>
+                                <ul id="password-checklist-user" style="display:none;">
+                                    <li id="length-user"><i class="fas fa-times"></i> Minimum 8 characters</li>
+                                    <li id="uppercase-user"><i class="fas fa-times"></i> At least one uppercase letter</li>
+                                    <li id="lowercase-user"><i class="fas fa-times"></i> At least one lowercase letter</li>
+                                    <li id="number-user"><i class="fas fa-times"></i> At least one number</li>
+                                    <li id="special-user"><i class="fas fa-times"></i> At least one special character</li>
                                 </ul>
                             </div>
                         </div>
                         <div class="input-field">
-                            <label>Confirm Password</label>
-                            <input id="password2-player" name="password2_player" type="password" placeholder="Confirm your password" required>
-                            <span id="password-error-player" style="color: red; font-size: 12px; display: none;">Passwords do not match</span>
+                            <label for="password2-user">Confirm Password</label>
+                            <input id="password2-user" name="password2_user" type="password" placeholder="Confirm your password" required>
+                            <spaan id="password-error-user" style="color: red; font-size: 12px; display: none;">Passwords do not match</span>
                         </div>
-                        <button type="submit" class="submit" name="register" form="playerSignUpForm" formType="player">
-                            <span class="btnText">Submit</span> 
+                        <button type="submit" class="submit" name="register" formType="user" onclick="submitForm(event, 'user', 'userSignUpForm')">
+                            <span class="btnText">Register</span>
                         </button>
                     </div>
                 </div>
             </div>
         </form>
     </div>
-    
-    <script src="../js/signUp.js"></script>
+
+    <script src="../js/signup.js"></script>
 </body>
 </html>
