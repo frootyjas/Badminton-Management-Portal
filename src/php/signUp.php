@@ -65,11 +65,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['userType'])) {
         $userType = $_POST['userType'];
         $username = $_POST['username_' . $userType] ?? '';
-        $password = password_hash($_POST['password1_' . $userType] ?? '', PASSWORD_DEFAULT);
+        $password = $_POST['password1_' . $userType] ?? '';
 
         if (empty($username) || empty($password)) {
             $error = "Please fill out all the fields correctly.";
         } else {
+            $passwordHashed = password_hash($password, PASSWORD_DEFAULT);
+
             try {
                 $conn->begin_transaction();
                 $email = '';
@@ -85,19 +87,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $contactNumberOwner = $_POST['contact_number_owner'] ?? '';
                         $email = $_POST['email_owner'] ?? '';
                         $municipalityOwner = $_POST['municipality_owner'] ?? '';
-                        $username = $_POST['username'] ?? '';
-                        $password = $_POST['password'] ?? '';
-                    
+
                         if (empty($firstNameOwner) || empty($lastNameOwner) || empty($genderOwner) || empty($dobOwner) || empty($statusOwner) || empty($contactNumberOwner) || empty($email) || empty($municipalityOwner) || empty($username) || empty($password)) {
                             $error = "Please fill out all the fields correctly.";
                             throw new Exception($error);
                         }
-                    
+
                         $stmt = $conn->prepare("SELECT * FROM court_owner WHERE email = ?");
                         if ($stmt === false) {
                             throw new Exception("Failed to prepare SQL statement: " . $conn->error);
                         }
-                    
+
                         $stmt->bind_param("s", $email);
                         $stmt->execute();
                         $result = $stmt->get_result();
@@ -105,20 +105,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $error = "Email has already been used.";
                             throw new Exception($error);
                         }
-                    
+
                         $stmt = $conn->prepare("INSERT INTO court_owner (first_name, middle_name, last_name, gender, date_of_birth, status, contact_number, email, municipality, username, password, email_verified) 
                                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'no')");
                         if ($stmt === false) {
                             throw new Exception("Failed to prepare SQL statement: " . $conn->error);
                         }
-                    
-                        $stmt->bind_param("sssssssssss", $firstNameOwner, $middleNameOwner, $lastNameOwner, $genderOwner, $dobOwner, $statusOwner, $contactNumberOwner, $email, $municipalityOwner, $username, $password);
+
+                        $stmt->bind_param("sssssssssss", $firstNameOwner, $middleNameOwner, $lastNameOwner, $genderOwner, $dobOwner, $statusOwner, $contactNumberOwner, $email, $municipalityOwner, $username, $passwordHashed);
                         $stmt->execute();
-                    
+
                         if ($stmt->error) {
                             throw new Exception($stmt->error);
                         }
-                    
+
                         break;                    
 
                     case 'user':
@@ -132,7 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $email = $_POST['email_user'] ?? '';
                         $municipalityUser = $_POST['municipality_user'] ?? '';
 
-                        if (empty($firstNameUser) || empty($lastNameUser) || empty($genderUser) || empty($dobUser) || empty($contactNumberUser) || empty($email) || empty($municipalityUser)) {
+                        if (empty($firstNameUser) || empty($lastNameUser) || empty($genderUser) || empty($dobUser) || empty($contactNumberUser) || empty($email) || empty($municipalityUser) || empty($username) || empty($password)) {
                             $error = "Please fill out all the fields correctly.";
                             throw new Exception($error);
                         }
@@ -156,7 +156,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             throw new Exception("Failed to prepare SQL statement: " . $conn->error);
                         }
 
-                        $stmt->bind_param("sssssssssss", $firstNameUser, $middleNameUser, $lastNameUser, $userType, $genderUser, $dobUser, $contactNumberUser, $email, $municipalityUser, $username, $password);
+                        $stmt->bind_param("sssssssssss", $firstNameUser, $middleNameUser, $lastNameUser, $userType, $genderUser, $dobUser, $contactNumberUser, $email, $municipalityUser, $username, $passwordHashed);
                         $stmt->execute();
 
                         if ($stmt->error) {
@@ -188,23 +188,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if (sendOTP($email, $otp)) {
                         $_SESSION['email'] = $email;
                         $conn->commit();
+                
+                        // Debugging: Print session variables and OTP
+                        var_dump($_SESSION);
+                        var_dump($otp);
+                
                         header("Location: verifyOtp.php");
-                        exit();
+                        exit(); // Ensure no further code is executed
                     } else {
                         $error = "Failed to send OTP. Please try again.";
+                        throw new Exception($error);
                     }
-                }                
+                } else {
+                    $conn->rollback();
+                }
 
-                $conn->rollback();
             } catch (Exception $e) {
                 $conn->rollback();
                 $error = $e->getMessage();
             }
         }
+    } else {
+        $error = "User type is required.";
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -516,6 +524,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
     </div>
 
-    <script src="../js/signup.js"></script>
+    <script src="../js/signUp.js"></script>
 </body>
 </html>
