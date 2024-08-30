@@ -5,16 +5,15 @@ include '../../config/config.php';
 $error = "";
 $message = "";
 
-// Check if OTP was submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['otp'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Debug: Output session and POST data
     echo "<pre>";
     print_r($_SESSION);
     print_r($_POST);
     echo "</pre>";
 
-    $enteredOTP = $_POST['otp'];
-    $userId = $_SESSION['owner_id'] ?? $_SESSION['user_id'] ?? '';
+    $enteredOTP = $_POST['otp'] ?? '';
+    $userId = $_SESSION['user_id'] ?? '';
 
     if (empty($enteredOTP) || empty($userId)) {
         $error = "OTP or user ID is missing.";
@@ -34,15 +33,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['otp'])) {
                 $storedOTP = $row['otp'];
 
                 if ($enteredOTP == $storedOTP) {
-                    // Determine if we are verifying for a court_owner or user
-                    if (isset($_SESSION['owner_id'])) {
-                        // Update email_verified status for court_owner
-                        $stmt = $conn->prepare("UPDATE court_owner SET email_verified = 'yes' WHERE owner_id = ?");
-                    } else {
-                        // Update email_verified status for user
-                        $stmt = $conn->prepare("UPDATE users SET email_verified = 'yes' WHERE user_id = ?");
-                    }
-
+                    // Update the email_verified status
+                    $stmt = $conn->prepare("UPDATE court_owner SET email_verified = 'yes' WHERE owner_id = ?");
                     if ($stmt === false) {
                         $error = "Failed to prepare SQL statement: " . $conn->error;
                     } else {
@@ -61,12 +53,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['otp'])) {
             }
         }
     }
-}
-
-// Resend OTP functionality
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['resend'])) {
-    // Logic to resend the OTP (not fully implemented here)
-    $message = "OTP has been resent.";
 }
 ?>
 
